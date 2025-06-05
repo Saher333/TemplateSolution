@@ -1,0 +1,6 @@
+@Template.WebApi_HostAddress = http://localhost:5010
+
+
+Accept: application/json
+
+###

@@ -1,9 +1,8 @@
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Template.Core.Interfaces;
 using Template.Core.Models;
+using Template.Core.Repositories.Mappers;
+using Template.Core.Repositories.StorageModels;
 
 namespace Template.Core.Repositories
 {
@@ -21,40 +20,44 @@ namespace Template.Core.Repositories
 
         public async Task<Product> GetByIdAsync(Guid id)
         {
-            return await _context.Set<Product>().FindAsync(id);
+            var entity = await _context.Set<ProductEntity>().FindAsync(id);
+            return entity?.ToProduct();
         }
 
         public async Task<IEnumerable<Product>> GetAllAsync()
         {
-            return await _context.Set<Product>().ToListAsync();
+            var entities = await _context.Set<ProductEntity>().ToListAsync();
+            return entities.Select(e => e.ToProduct());
         }
 
         public async Task<Product> AddAsync(Product product)
         {
-            await _context.Set<Product>().AddAsync(product);
+            var entity = product.ToEntity();
+            await _context.Set<ProductEntity>().AddAsync(entity);
             await _context.SaveChangesAsync();
-            return product;
+            return entity.ToProduct();
         }
 
         public async Task UpdateAsync(Product product)
         {
-            _context.Entry(product).State = EntityState.Modified;
+            var entity = product.ToEntity();
+            _context.Entry(entity).State = EntityState.Modified;
             await _context.SaveChangesAsync();
         }
 
         public async Task DeleteAsync(Guid id)
         {
-            var product = await GetByIdAsync(id);
-            if (product != null)
+            var entity = await _context.Set<ProductEntity>().FindAsync(id);
+            if (entity != null)
             {
-                _context.Set<Product>().Remove(product);
+                _context.Set<ProductEntity>().Remove(entity);
                 await _context.SaveChangesAsync();
             }
         }
 
         public async Task<bool> ExistsAsync(Guid id)
         {
-            return await _context.Set<Product>().AnyAsync(p => p.Id == id);
+            return await _context.Set<ProductEntity>().AnyAsync(p => p.Id == id);
         }
     }
 } 

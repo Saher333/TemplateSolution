@@ -1,41 +1,20 @@
-using System;
-using System.Threading;
-using System.Threading.Tasks;
 using MediatR;
 using Template.Core.Common;
+using Template.Core.CQRS.Queries.Models;
+using Template.Core.Interfaces;
 using Template.Core.Models;
-using Template.Core.Services;
 
-namespace Template.Core.CQRS.Queries
+namespace Template.Core.CQRS.Queries;
+
+/// <summary>
+/// Handler for GetProductQuery
+/// </summary>
+public class GetProductQueryHandler(IProductService productService) : IRequestHandler<GetProductQuery, Result<Product>>
 {
-    /// <summary>
-    /// Query for retrieving a product by ID
-    /// </summary>
-    public class GetProductQuery : IRequest<Result<Product>>
+    private readonly IProductService _productService = productService ?? throw new ArgumentNullException(nameof(productService));
+
+    public async Task<Result<Product>> Handle(GetProductQuery request, CancellationToken cancellationToken)
     {
-        public Guid Id { get; }
-
-        public GetProductQuery(Guid id)
-        {
-            Id = id;
-        }
+        return await _productService.GetProductByIdAsync(request.Id);
     }
-
-    /// <summary>
-    /// Handler for GetProductQuery
-    /// </summary>
-    public class GetProductQueryHandler : IRequestHandler<GetProductQuery, Result<Product>>
-    {
-        private readonly IProductService _productService;
-
-        public GetProductQueryHandler(IProductService productService)
-        {
-            _productService = productService ?? throw new ArgumentNullException(nameof(productService));
-        }
-
-        public async Task<Result<Product>> Handle(GetProductQuery request, CancellationToken cancellationToken)
-        {
-            return await _productService.GetProductByIdAsync(request.Id);
-        }
-    }
-} 
+}
